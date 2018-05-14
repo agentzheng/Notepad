@@ -1,4 +1,5 @@
 package com.hicsg.mininotepad.view;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,15 +10,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import javax.swing.undo.UndoManager;
 
+import com.hicsg.mininotepad.JFontChooser;
 import com.hicsg.mininotepad.controller.Controller;
 
 /**
@@ -43,6 +39,8 @@ public class MainFrame extends JFrame{
 	private JPopupMenu popMenu = new JPopupMenu();     //右击鼠标弹出的菜单
 	//use for auto wrap
 	public JMenuItem lineItem = new JMenuItem(); //自动换行选项
+	//use for choose font
+	public JMenuItem fontItem = new JMenuItem(); //字体选项
 	//use for undo function
 	public UndoManager undoMgr = new UndoManager(); //撤销管理器
 	//use clipboard to temporary storage of information
@@ -55,9 +53,16 @@ public class MainFrame extends JFrame{
 	//初始化
 	//initialization
 	public void init(){
+		//设置ICON
+		java.net.URL imgURL = MainFrame.class.getResource("icon.png");
+		ImageIcon imgIcon = new ImageIcon(imgURL);
+		Image img = imgIcon.getImage();
+		this.setIconImage(img);
+
+
 		//set application title as file name plus simple notepad
-		this.setTitle(fileName+"--简易记事本");
-		this.setSize(500,600);
+		this.setTitle(fileName+" - 记事本");
+		this.setSize(800,900);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		this.setLocationRelativeTo(null);
 		this.addWindowListener(new WindowAdapter(){
@@ -265,26 +270,58 @@ public class MainFrame extends JFrame{
 				con.lineWrap();
 			}
 			
-		});		
-		
+		});
+		fontItem = new JMenuItem("字体");
+
+		fontItem.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFontChooser one = new JFontChooser(body.getFont(), body.getForeground());
+				one.showDialog(null,500,200);
+				//获取选择的字体
+				Font font=one.getSelectedfont();
+				//获取选择的颜色
+				Color color=one.getSelectedcolor();
+				if(font!=null&&color!=null){
+					body.setFont(font);
+					body.setForeground(color);
+				}
+			}
+
+		});
+
 		formatMenu.add(lineItem);
+		formatMenu.add(fontItem);
 		mb.add(formatMenu);
 		
 		//关于菜单
-		//define a menu to show about information
-		JMenu aboutMenu = new JMenu();
-		aboutMenu.setText("关于");
-		JMenuItem aboutItem = new JMenuItem("查看项目主页");
+		//define a menu to show mainPgae information
+		JMenu helpMenu = new JMenu();
+		helpMenu.setText("帮助");
+		JMenuItem mainPageItem = new JMenuItem("查看项目主页");
+		JMenuItem aboutItem = new JMenuItem("关于记事本");
+		mainPageItem.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				con.mainPgae();
+			}
+			
+		});
+
 		aboutItem.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				con.about();
 			}
-			
+
 		});
-		aboutMenu.add(aboutItem);
-		mb.add(aboutMenu);
+
+		helpMenu.add(mainPageItem);
+		helpMenu.add(aboutItem);
+		mb.add(helpMenu);
 		
 		//添加菜单栏
 		this.setJMenuBar(mb);

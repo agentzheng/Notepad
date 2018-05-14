@@ -57,8 +57,7 @@ public class Controller {
 			//获取用户点击的信息
 			//get info for what has the user choosen
 			//ask for if the file has not been saved,just to save it then create a new one
-			int choose = JOptionPane.showConfirmDialog(null, "您还没有保存，" +
-					"是否保存再新建？");
+			int choose = JOptionPane.showConfirmDialog(null, "是否将更改保存到 无标题？");
 			//if choose yes,save the file then create a new one
 			if(choose==JOptionPane.YES_OPTION){ //点击是
 				saveFile();
@@ -323,15 +322,15 @@ public class Controller {
 	}
 	
 	//关于
-	//about
-	public void about(){
+	//mainPgae
+	public void mainPgae(){
 //		//show the dialog for introduce the copyright of this appliaction
 //		JOptionPane.showMessageDialog(null,"简易记事本 " +
 //				"Copyright2012 创意Sway工作室。email：arjinmc@hotmail.com");
 
 		try {
 			//String url = "http://www.baidu.com";
-			String url = "http://www.csdn.net/";
+			String url = "https://github.com/agentzheng/Notepad";
 			java.net.URI uri = java.net.URI.create(url);
 			// 获取当前系统桌面扩展
 			java.awt.Desktop dp = java.awt.Desktop.getDesktop();
@@ -351,7 +350,14 @@ public class Controller {
 			e.printStackTrace();
 		}
 	}
-	
+
+	public void about(){
+//		//show the dialog for introduce the copyright of this appliaction
+		JOptionPane.showMessageDialog(null,
+				"记事本\nCopyright2018 Elliott Zheng\nEmail：elliott.zheng@hypercube.top");
+
+	}
+
 	//退出
 	//exit method
 	public void exit(){

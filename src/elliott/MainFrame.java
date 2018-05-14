@@ -74,7 +74,7 @@ public class MainFrame extends JFrame{
 		timeDateItem=new JMenuItem("Time/Date");
 
 
-		aboutItem = new JMenuItem("about");
+		aboutItem = new JMenuItem("mainPgae");
 		//添加两个选项卡到JMenu
 		//添加字菜单项到菜单项
 
