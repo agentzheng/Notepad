@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
@@ -80,6 +81,7 @@ public class MainFrame extends JFrame{
 		//menu bar
 		JMenuBar mb = new JMenuBar();		
 		mb.setBackground(Color.white);
+		mb.setFont(new Font("微软雅黑", Font.PLAIN, 15));
 
 		//定义“文件”菜单，包含新建，打开，保存，另存为，退出功能
 		//define some functions in file menu
@@ -89,7 +91,7 @@ public class MainFrame extends JFrame{
 		//新建
 		//new file function
 		JMenuItem newItem = new JMenuItem();
-		newItem.setText("新建");
+		newItem.setText("\t新建\t(N)");
 		newItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -102,7 +104,7 @@ public class MainFrame extends JFrame{
 		//打开
 		//open file function
 		JMenuItem openItem = new JMenuItem();
-		openItem.setText("打开");
+		openItem.setText("\t打开\t(O)...");
 		openItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -115,7 +117,7 @@ public class MainFrame extends JFrame{
 		//保存
 		//save file function
 		JMenuItem saveItem = new JMenuItem();
-		saveItem.setText("保存");
+		saveItem.setText("\t保存\t(S)");
 		//saveItem.setEnabled(false);
 		saveItem.addActionListener(new ActionListener(){
 
@@ -129,7 +131,7 @@ public class MainFrame extends JFrame{
 		//另存为
 		//save as file function
 		JMenuItem saveForItem = new JMenuItem();
-		saveForItem.setText("另存为");
+		saveForItem.setText("\t另存为\t(A)...");
 		saveForItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -142,7 +144,7 @@ public class MainFrame extends JFrame{
 		//退出
 		//exit function
 		JMenuItem exitItem = new JMenuItem();
-		exitItem.setText("退出");
+		exitItem.setText("\t退出\t(X)");
 		exitItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -162,12 +164,12 @@ public class MainFrame extends JFrame{
 		//定义“编辑”菜单，包含剪切，复制，粘贴，全选，撤销功能
 		//define some functions into edit menu
 		JMenu editMenu = new JMenu();
-		editMenu.setText("编辑(E)");
+		editMenu.setText("\t编辑(E)");
 		
 		//剪切
 		//cut function
 		final JMenuItem cutItem = new JMenuItem();
-		cutItem.setText("剪切");
+		cutItem.setText("\t剪切");
 		cutItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -180,7 +182,7 @@ public class MainFrame extends JFrame{
 		//复制
 		//copy function
 		final JMenuItem copyItem = new JMenuItem();
-		copyItem.setText("复制");
+		copyItem.setText("\t复制");
 		copyItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -193,7 +195,7 @@ public class MainFrame extends JFrame{
 		//粘贴
 		//paste function
 		pasteItem = new JMenuItem();
-		pasteItem.setText("粘贴");
+		pasteItem.setText("\t粘贴");
 		pasteItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -206,7 +208,7 @@ public class MainFrame extends JFrame{
 		//全选
 		//select all function
 		JMenuItem selectAllItem = new JMenuItem();
-		selectAllItem.setText("全选");
+		selectAllItem.setText("\t全选");
 		selectAllItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -219,7 +221,7 @@ public class MainFrame extends JFrame{
 		//撤销
 		//undo function
 		JMenuItem rollbackItem = new JMenuItem();
-		rollbackItem.setText("撤销");
+		rollbackItem.setText("\t撤销");
 		rollbackItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -265,7 +267,7 @@ public class MainFrame extends JFrame{
 		//自动换行
 		//auto wrap
 		lineItem = new JMenuItem();
-		lineItem.setText("√自动换行");
+		lineItem.setText("\t√自动换行");
 		lineItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -274,7 +276,7 @@ public class MainFrame extends JFrame{
 			}
 			
 		});
-		fontItem = new JMenuItem("字体");
+		fontItem = new JMenuItem("\t字体");
 
 		fontItem.addActionListener(new ActionListener(){
 
@@ -299,7 +301,7 @@ public class MainFrame extends JFrame{
 
 		//查看 菜单
 		JMenu viewMenu = new JMenu("查看(V)");
-		JMenuItem statusItem=new JMenuItem("状态栏(S)");
+		JMenuItem statusItem=new JMenuItem("\t状态栏(S)");
 		statusItem.setEnabled(false);
 
 		viewMenu.add(statusItem);
@@ -309,8 +311,8 @@ public class MainFrame extends JFrame{
 		//define a menu to show mainPgae information
 		JMenu helpMenu = new JMenu();
 		helpMenu.setText("帮助(H)");
-		JMenuItem mainPageItem = new JMenuItem("查看项目主页");
-		JMenuItem aboutItem = new JMenuItem("关于记事本");
+		JMenuItem mainPageItem = new JMenuItem("\t查看项目主页");
+		JMenuItem aboutItem = new JMenuItem("\t关于记事本");
 		mainPageItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -461,13 +463,73 @@ public class MainFrame extends JFrame{
 		//添加撤销管理器
 		//add undo manager to the frame
 		body.getDocument().addUndoableEditListener(undoMgr);
+
+		//设置滚动条一直存在，像windows 的notepad 一样
+		sp.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sp.setViewportView(body);
-		this.add(sp);		
+
+		this.add(sp);
+
 		//get the system's clipboard
 		clipboard = getToolkit().getSystemClipboard();//获取系统剪贴板
+		setGlobalShortCuts();
 	}
-	
-	
+	/***
+	 * 增加全局快捷键.<Br>
+	 *
+	 */
+	protected void setGlobalShortCuts() {
+		// Add global shortcuts
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		// 注册应用程序全局键盘事件, 所有的键盘事件都会被此事件监听器处理.
+		toolkit.addAWTEventListener(new java.awt.event.AWTEventListener() {
+			public void eventDispatched(AWTEvent event) {
+				//这个是保存
+				if (event.getClass() == KeyEvent.class) {
+					KeyEvent kE = ((KeyEvent) event);
+					// 处理按键事件 Ctrl+S
+					if (kE.getKeyCode() == KeyEvent.VK_S
+							&& kE.isControlDown()&&!kE.isAltDown()
+							&& kE.getID() == KeyEvent.KEY_PRESSED) {
+							con.saveFile();
+					}
+				}
+
+				if (event.getClass() == KeyEvent.class) {
+					KeyEvent kE = ((KeyEvent) event);
+					// 处理按键事件 Ctrl+Z 撤销
+					if (kE.getKeyCode() == KeyEvent.VK_Z
+							&& kE.isControlDown()&&!kE.isAltDown()
+							&& kE.getID() == KeyEvent.KEY_PRESSED) {
+						con.rollback();
+					}
+				}
+
+				if (event.getClass() == KeyEvent.class) {
+					KeyEvent kE = ((KeyEvent) event);
+					// 处理按键事件 Ctrl+N 新建文件
+					if (kE.getKeyCode() == KeyEvent.VK_N
+							&& kE.isControlDown()&&!kE.isAltDown()
+							&& kE.getID() == KeyEvent.KEY_PRESSED) {
+						con.createFile();
+					}
+				}
+
+				if (event.getClass() == KeyEvent.class) {
+					KeyEvent kE = ((KeyEvent) event);
+					// 处理按键事件 Ctrl+O 打开文件
+					if (kE.getKeyCode() == KeyEvent.VK_O
+							&& kE.isControlDown()&&!kE.isAltDown()
+							&& kE.getID() == KeyEvent.KEY_PRESSED) {
+						con.openFile();
+					}
+				}
+
+			}
+		}, java.awt.AWTEvent.KEY_EVENT_MASK);
+
+	}
+
 	public MainFrame(){
 		init();
 	}

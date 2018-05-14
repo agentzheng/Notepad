@@ -27,6 +27,14 @@ import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+/**
+ * this class is to show a font choose dialog
+ * @author 神奇物种
+ * @email https://blog.csdn.net/tangcaijun/article/details/8372943
+ * @date 2012.12.22
+ *
+ */
+
 @SuppressWarnings("serial")
 public class JFontChooser extends JPanel {
 
@@ -307,17 +315,4 @@ public class JFontChooser extends JPanel {
         dialog.setVisible(true);
     }
 
-    /*测试使用*/
-    public static void main(String[] args) {
-        JFontChooser one = new JFontChooser(new Font("宋体", Font.PLAIN, 14), Color.BLACK);
-//      JFontChooser one = new JFontChooser(); //无参
-        one.showDialog(null,500,200);
-        //获取选择的字体
-        Font font=one.getSelectedfont();
-        //获取选择的颜色
-        if(font!=null){
-            /*打印用户选择的字体和颜色*/
-            System.out.println(font);
-        }
-    }
 }

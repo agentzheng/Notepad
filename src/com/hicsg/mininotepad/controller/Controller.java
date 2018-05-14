@@ -303,7 +303,12 @@ public class Controller {
 	//undo method
 	public void rollback(){
 		if(mf.undoMgr.isSignificant()){
-			mf.undoMgr.undo();
+			try {
+				mf.undoMgr.undo();
+			}catch(Exception e)
+			{
+
+			}
 		}
 	}
 	
@@ -324,10 +329,6 @@ public class Controller {
 	//关于
 	//mainPgae
 	public void mainPgae(){
-//		//show the dialog for introduce the copyright of this appliaction
-//		JOptionPane.showMessageDialog(null,"简易记事本 " +
-//				"Copyright2012 创意Sway工作室。email：arjinmc@hotmail.com");
-
 		try {
 			//String url = "http://www.baidu.com";
 			String url = "https://github.com/agentzheng/Notepad";
@@ -383,7 +384,7 @@ public class Controller {
 	//update the title for application mainframe
 	public void updateTitle(){
 		//like simple notepad
-		mf.setTitle(mf.fileName+"--简易记事本");
+		mf.setTitle(mf.fileName+"- 记事本");
 	}
 	
 	//在构造函数中设置file的默认选项
