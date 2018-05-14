@@ -1,4 +1,4 @@
-package com.hicsg.mininotepad.controller;
+package com.elliott.notepad.controller;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -14,26 +14,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-import javax.sound.sampled.AudioFormat;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import com.hicsg.mininotepad.view.MainFrame;
-
-/**
- * 控制器，所设定了功能方法
- * 打开文件，保存文件，另存为
- * 编辑文件（剪切，复制，粘贴，全选，撤销）
- * 控制格式
- * 
- * This class is a controller
- * include some methods like open file,save file,save as..
- * edit file with cut,copy,paste,select all,undo functions
- * 
- * @author Eminem
- * @email arjinmc@hotmail.com
- * @date 2012.5.8
- */
+import com.elliott.notepad.view.MainFrame;
 
 public class Controller {
 

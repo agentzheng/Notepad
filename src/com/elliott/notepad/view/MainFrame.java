@@ -1,4 +1,4 @@
-package com.hicsg.mininotepad.view;
+package com.elliott.notepad.view;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
@@ -9,22 +9,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
 
-import com.hicsg.mininotepad.JFontChooser;
-import com.hicsg.mininotepad.controller.Controller;
+import com.elliott.notepad.JFontChooser;
+import com.elliott.notepad.controller.Controller;
 
-/**
- * 软件的界面类，定义了控件以及控件的布局
- * this class is to make a frame to show the application ui
- * @author Eminem
- * @email arjinmc@hotmail.com
- * @date 2012.5.8
- *
- */
 
 public class MainFrame extends JFrame{
  
@@ -475,7 +466,7 @@ public class MainFrame extends JFrame{
 		setGlobalShortCuts();
 	}
 	/***
-	 * 增加全局快捷键.<Br>
+	 * 增加全局快捷键.
 	 *
 	 */
 	protected void setGlobalShortCuts() {
@@ -534,4 +525,14 @@ public class MainFrame extends JFrame{
 		init();
 	}
 
+    public static void main(String[] args) {
+
+        MainFrame mainFrame = new MainFrame();
+        Controller controller = new Controller();
+
+        mainFrame.setController(controller);
+        controller.setMainFrame(mainFrame);
+
+        mainFrame.setVisible(true);
+    }
 }

@@ -1,4 +1,4 @@
-package com.hicsg.mininotepad;
+package com.elliott.notepad;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
