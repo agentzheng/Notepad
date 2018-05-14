@@ -1,14 +1,8 @@
 package com.elliott.notepad.view;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
+import java.security.Key;
 
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
@@ -41,7 +35,11 @@ public class MainFrame extends JFrame{
 	public void setController(Controller con){
 		this.con = con;
 	}
-	
+
+	//相关变量
+	int start=0;//查找开始位置
+	int end=0;//查找结束位置
+
 	//初始化
 	//initialization
 	public void init(){
@@ -78,10 +76,12 @@ public class MainFrame extends JFrame{
 		//define some functions in file menu
 		JMenu fileMenu = new JMenu();
 		fileMenu.setText("文件(F)");
-		
+		fileMenu.setMnemonic(KeyEvent.VK_F);
+
 		//新建
 		//new file function
 		JMenuItem newItem = new JMenuItem();
+		newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,InputEvent.CTRL_MASK));
 		newItem.setText("\t新建\t(N)");
 		newItem.addActionListener(new ActionListener(){
 
@@ -95,6 +95,7 @@ public class MainFrame extends JFrame{
 		//打开
 		//open file function
 		JMenuItem openItem = new JMenuItem();
+		openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,InputEvent.CTRL_MASK));
 		openItem.setText("\t打开\t(O)...");
 		openItem.addActionListener(new ActionListener(){
 
@@ -109,6 +110,7 @@ public class MainFrame extends JFrame{
 		//save file function
 		JMenuItem saveItem = new JMenuItem();
 		saveItem.setText("\t保存\t(S)");
+		saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.CTRL_MASK));
 		//saveItem.setEnabled(false);
 		saveItem.addActionListener(new ActionListener(){
 
@@ -149,6 +151,7 @@ public class MainFrame extends JFrame{
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);
 		fileMenu.add(saveForItem);
+		fileMenu.addSeparator();
 		fileMenu.add(exitItem);		
 		mb.add(fileMenu);
 		
@@ -156,10 +159,12 @@ public class MainFrame extends JFrame{
 		//define some functions into edit menu
 		JMenu editMenu = new JMenu();
 		editMenu.setText("\t编辑(E)");
+		editMenu.setMnemonic(KeyEvent.VK_E);
 		
 		//剪切
 		//cut function
 		final JMenuItem cutItem = new JMenuItem();
+		cutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X,InputEvent.CTRL_MASK));
 		cutItem.setText("\t剪切");
 		cutItem.addActionListener(new ActionListener(){
 
@@ -173,6 +178,7 @@ public class MainFrame extends JFrame{
 		//复制
 		//copy function
 		final JMenuItem copyItem = new JMenuItem();
+		copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,InputEvent.CTRL_MASK));
 		copyItem.setText("\t复制");
 		copyItem.addActionListener(new ActionListener(){
 
@@ -186,6 +192,7 @@ public class MainFrame extends JFrame{
 		//粘贴
 		//paste function
 		pasteItem = new JMenuItem();
+		pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V,InputEvent.CTRL_MASK));
 		pasteItem.setText("\t粘贴");
 		pasteItem.addActionListener(new ActionListener(){
 
@@ -199,7 +206,9 @@ public class MainFrame extends JFrame{
 		//全选
 		//select all function
 		JMenuItem selectAllItem = new JMenuItem();
+		selectAllItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK));
 		selectAllItem.setText("\t全选");
+
 		selectAllItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -212,6 +221,8 @@ public class MainFrame extends JFrame{
 		//撤销
 		//undo function
 		JMenuItem rollbackItem = new JMenuItem();
+		rollbackItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,InputEvent.CTRL_MASK));
+
 		rollbackItem.setText("\t撤销");
 		rollbackItem.addActionListener(new ActionListener(){
 
@@ -221,17 +232,49 @@ public class MainFrame extends JFrame{
 			}
 			
 		});
-		
-		editMenu.add(rollbackItem);
-		editMenu.add(cutItem);
-		editMenu.add(copyItem);
-		editMenu.add(pasteItem);
-		editMenu.add(selectAllItem);		
-		editMenu.addActionListener(new ActionListener(){
+
+		//查找
+		//find function
+		JMenuItem findItem = new JMenuItem("查找");
+		findItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,InputEvent.CTRL_MASK));
+		findItem.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				find(body.getSelectedText());
+			}
+
+		});
+
+		//替换
+		//replace function
+		JMenuItem replaceItem = new JMenuItem("替换");
+		replaceItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H,InputEvent.CTRL_MASK));
+		replaceItem.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				replace(body.getSelectedText());
+			}
+
+		});
+
+
+
+
+		editMenu.add(rollbackItem);
+		editMenu.addSeparator();
+		editMenu.add(cutItem);
+		editMenu.add(copyItem);
+		editMenu.add(pasteItem);
+		editMenu.addSeparator();
+		editMenu.add(findItem);
+		editMenu.add(replaceItem);
+		editMenu.add(selectAllItem);
+
+		editMenu.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				if(body.getText()==""){
 					cutItem.setEnabled(false);
 					copyItem.setEnabled(false);
@@ -254,7 +297,7 @@ public class MainFrame extends JFrame{
 		//define some functions into data format menu
 		JMenu formatMenu = new JMenu();
 		formatMenu.setText("格式(O)");
-		
+		formatMenu.setMnemonic(KeyEvent.VK_O);
 		//自动换行
 		//auto wrap
 		lineItem = new JMenuItem();
@@ -292,6 +335,7 @@ public class MainFrame extends JFrame{
 
 		//查看 菜单
 		JMenu viewMenu = new JMenu("查看(V)");
+		viewMenu.setMnemonic(KeyEvent.VK_V);
 		JMenuItem statusItem=new JMenuItem("\t状态栏(S)");
 		statusItem.setEnabled(false);
 
@@ -301,6 +345,7 @@ public class MainFrame extends JFrame{
 		//关于菜单
 		//define a menu to show mainPgae information
 		JMenu helpMenu = new JMenu();
+		helpMenu.setMnemonic(KeyEvent.VK_H);
 		helpMenu.setText("帮助(H)");
 		JMenuItem mainPageItem = new JMenuItem("\t查看项目主页");
 		JMenuItem aboutItem = new JMenuItem("\t关于记事本");
@@ -397,13 +442,28 @@ public class MainFrame extends JFrame{
 			}
 			
 		});
-		
+
+		//查找
+		//find function for mouse right click menu
+		final JMenuItem findItem2 = new JMenuItem("查找");
+		findItem2.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				popMenu.setVisible(false);
+				find(body.getSelectedText());
+			}
+
+		});
+
+
 		popMenu.add(rollbackItem2);
 		popMenu.add(cutItem2);
 		popMenu.add(copyItem2);
 		popMenu.add(pasteItem2);
 		popMenu.add(selectAllItem2);
-				
+		popMenu.add(findItem2);
+
 		body.setLineWrap(true);
 		body.addKeyListener(new KeyAdapter(){
 			//只要按下键盘，文件就是被修改过
@@ -463,62 +523,161 @@ public class MainFrame extends JFrame{
 
 		//get the system's clipboard
 		clipboard = getToolkit().getSystemClipboard();//获取系统剪贴板
-		setGlobalShortCuts();
+
 	}
-	/***
-	 * 增加全局快捷键.
-	 *
-	 */
-	protected void setGlobalShortCuts() {
-		// Add global shortcuts
-		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		// 注册应用程序全局键盘事件, 所有的键盘事件都会被此事件监听器处理.
-		toolkit.addAWTEventListener(new java.awt.event.AWTEventListener() {
-			public void eventDispatched(AWTEvent event) {
-				//这个是保存
-				if (event.getClass() == KeyEvent.class) {
-					KeyEvent kE = ((KeyEvent) event);
-					// 处理按键事件 Ctrl+S
-					if (kE.getKeyCode() == KeyEvent.VK_S
-							&& kE.isControlDown()&&!kE.isAltDown()
-							&& kE.getID() == KeyEvent.KEY_PRESSED) {
-							con.saveFile();
-					}
-				}
 
-				if (event.getClass() == KeyEvent.class) {
-					KeyEvent kE = ((KeyEvent) event);
-					// 处理按键事件 Ctrl+Z 撤销
-					if (kE.getKeyCode() == KeyEvent.VK_Z
-							&& kE.isControlDown()&&!kE.isAltDown()
-							&& kE.getID() == KeyEvent.KEY_PRESSED) {
-						con.rollback();
-					}
-				}
+	public void find(String str)
+	{
+		//查找对话框
+		JDialog search=new JDialog(this,"查找");
+		search.setSize(400, 100);
+		search.setLocation(450,350);
+		JLabel label_1=new JLabel("查找内容");
 
-				if (event.getClass() == KeyEvent.class) {
-					KeyEvent kE = ((KeyEvent) event);
-					// 处理按键事件 Ctrl+N 新建文件
-					if (kE.getKeyCode() == KeyEvent.VK_N
-							&& kE.isControlDown()&&!kE.isAltDown()
-							&& kE.getID() == KeyEvent.KEY_PRESSED) {
-						con.createFile();
-					}
-				}
+		final JTextField textField_1=new JTextField(5);
+		textField_1.setText(str);
+		JButton buttonFind=new JButton("查找下一个");
+		JButton buttonCancel=new JButton("取消");
 
-				if (event.getClass() == KeyEvent.class) {
-					KeyEvent kE = ((KeyEvent) event);
-					// 处理按键事件 Ctrl+O 打开文件
-					if (kE.getKeyCode() == KeyEvent.VK_O
-							&& kE.isControlDown()&&!kE.isAltDown()
-							&& kE.getID() == KeyEvent.KEY_PRESSED) {
-						con.openFile();
-					}
+		JPanel panel=new JPanel(new GridLayout(3,2));
+
+		panel.add(label_1);
+		panel.add(textField_1);
+		panel.add(buttonFind);
+		panel.add(buttonCancel);
+		search.add(panel);
+		search.setVisible(true);
+
+
+		//为查找下一个 按钮绑定监听事件
+		buttonFind.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String findText=textField_1.getText();//查找的字符串
+
+				String textArea=body.getText();//当前文本框的内容
+				start=textArea.indexOf(findText,end);
+				end=start+findText.length();
+				if(start==-1)//没有找到
+				{
+					JOptionPane.showMessageDialog(null,"找不到\""+findText+"\"","记事本",JOptionPane.WARNING_MESSAGE);
+					body.select(start, end);
+				}
+				else
+				{
+					body.select(start,end);
 				}
 
 			}
-		}, java.awt.AWTEvent.KEY_EVENT_MASK);
+		});
 
+
+
+		buttonCancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				search.dispose();
+			}
+		});
+
+
+	}
+
+	public void replace(String str)
+	{
+
+		//替换对话框
+		JDialog search=new JDialog(this,"替换");
+		search.setSize(500, 300);
+		search.setLocation(450,350);
+		JLabel label_1=new JLabel("查找内容:");
+		JLabel label_2=new JLabel("替换为:");
+		final JTextField textField_1=new JTextField(5);
+		textField_1.setText(str);
+		final JTextField textField_2=new JTextField(5);
+		JButton findBtn=new JButton("查找下一个");
+		JButton replaceBtn=new JButton("替换");
+		JButton replaceAllBtn=new JButton("替换全部");
+		JButton cancelBtn=new JButton("取消");
+		JPanel panel=new JPanel(null);
+
+		label_1.setBounds(10,30,80,30);
+		label_2.setBounds(label_1.getX(),label_1.getY()+label_1.getHeight()+5,label_1.getWidth(),label_1.getHeight());
+
+		textField_1.setBounds(label_1.getX()+ label_1.getWidth()+5,label_1.getY(),220,label_1.getHeight());
+		textField_2.setBounds(label_2.getX()+label_2.getWidth()+5,label_2.getY(),textField_1.getWidth(),textField_1.getHeight());
+
+		findBtn.setBounds(textField_1.getX()+textField_1.getWidth()+10,label_1.getY(),120,30);
+		replaceBtn.setBounds(findBtn.getX(),findBtn.getY()+findBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
+		replaceAllBtn.setBounds(findBtn.getX(),replaceBtn.getY()+replaceBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
+		cancelBtn.setBounds(findBtn.getX(),replaceAllBtn.getY()+replaceAllBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
+
+
+		JCheckBox matchCase=new JCheckBox();
+
+		panel.add(label_1);
+		panel.add(textField_1);
+		panel.add(label_2);
+		panel.add(textField_2);
+
+		panel.add(findBtn);
+		panel.add(replaceBtn);
+		panel.add(replaceAllBtn);
+		panel.add(cancelBtn);
+
+		panel.setVisible(true);
+		search.add(panel);
+		search.setVisible(true);
+		search.setResizable(false);
+
+
+
+
+		//为查找下一个 按钮绑定监听事件
+		findBtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String findText=textField_1.getText();//查找的字符串
+
+				String textArea=body.getText();//当前文本框的内容
+				start=textArea.indexOf(findText,end);
+				end=start+findText.length();
+				if(start==-1)//没有找到
+				{
+					JOptionPane.showMessageDialog(null,"没找到"+findText,"记事本",JOptionPane.WARNING_MESSAGE);
+					body.select(start, end);
+				}
+				else
+				{
+					body.select(start,end);
+				}
+
+			}
+		});
+
+		//为替换按钮绑定监听时间
+		replaceBtn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String changeText=textField_2.getText();//替换的字符串
+				body.select(start, end);
+				body.replaceSelection(changeText);
+				body.select(start, end);
+			}
+		});
+
+		cancelBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				search.dispose();
+			}
+		});
 	}
 
 	public MainFrame(){

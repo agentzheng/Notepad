@@ -1,9 +1,12 @@
 package com.elliott.notepad.controller;
 
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,8 +17,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import com.elliott.notepad.view.MainFrame;
 
@@ -363,7 +365,8 @@ public class Controller {
 			}
 		}
 	}
-	
+
+
 	//更新标题
 	//update the title for application mainframe
 	public void updateTitle(){
