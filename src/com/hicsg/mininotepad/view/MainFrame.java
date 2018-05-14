@@ -59,10 +59,12 @@ public class MainFrame extends JFrame{
 		Image img = imgIcon.getImage();
 		this.setIconImage(img);
 
+		//设置默认字体
+		body.setFont(new Font("微软雅黑", Font.PLAIN, 18));
 
 		//set application title as file name plus simple notepad
 		this.setTitle(fileName+" - 记事本");
-		this.setSize(800,900);
+		this.setSize(1500,800);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		this.setLocationRelativeTo(null);
 		this.addWindowListener(new WindowAdapter(){
@@ -77,11 +79,12 @@ public class MainFrame extends JFrame{
 		//菜单栏
 		//menu bar
 		JMenuBar mb = new JMenuBar();		
-		
+		mb.setBackground(Color.white);
+
 		//定义“文件”菜单，包含新建，打开，保存，另存为，退出功能
 		//define some functions in file menu
 		JMenu fileMenu = new JMenu();
-		fileMenu.setText("文件");
+		fileMenu.setText("文件(F)");
 		
 		//新建
 		//new file function
@@ -159,7 +162,7 @@ public class MainFrame extends JFrame{
 		//定义“编辑”菜单，包含剪切，复制，粘贴，全选，撤销功能
 		//define some functions into edit menu
 		JMenu editMenu = new JMenu();
-		editMenu.setText("编辑");
+		editMenu.setText("编辑(E)");
 		
 		//剪切
 		//cut function
@@ -257,7 +260,7 @@ public class MainFrame extends JFrame{
 		//格式菜单，具有自动换行可选和字体设置功能
 		//define some functions into data format menu
 		JMenu formatMenu = new JMenu();
-		formatMenu.setText("格式");
+		formatMenu.setText("格式(O)");
 		
 		//自动换行
 		//auto wrap
@@ -281,11 +284,9 @@ public class MainFrame extends JFrame{
 				one.showDialog(null,500,200);
 				//获取选择的字体
 				Font font=one.getSelectedfont();
-				//获取选择的颜色
-				Color color=one.getSelectedcolor();
-				if(font!=null&&color!=null){
+
+				if(font!=null){
 					body.setFont(font);
-					body.setForeground(color);
 				}
 			}
 
@@ -294,11 +295,20 @@ public class MainFrame extends JFrame{
 		formatMenu.add(lineItem);
 		formatMenu.add(fontItem);
 		mb.add(formatMenu);
-		
+
+
+		//查看 菜单
+		JMenu viewMenu = new JMenu("查看(V)");
+		JMenuItem statusItem=new JMenuItem("状态栏(S)");
+		statusItem.setEnabled(false);
+
+		viewMenu.add(statusItem);
+		mb.add(viewMenu);
+
 		//关于菜单
 		//define a menu to show mainPgae information
 		JMenu helpMenu = new JMenu();
-		helpMenu.setText("帮助");
+		helpMenu.setText("帮助(H)");
 		JMenuItem mainPageItem = new JMenuItem("查看项目主页");
 		JMenuItem aboutItem = new JMenuItem("关于记事本");
 		mainPageItem.addActionListener(new ActionListener(){

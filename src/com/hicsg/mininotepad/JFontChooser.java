@@ -44,13 +44,11 @@ public class JFontChooser extends JPanel {
     private String                          showStr                                     = "AaBbYyZz";//展示的文字
     private int                             current_fontStyle                           = Font.PLAIN;//当前的字样,默认常规.
     private int                             current_fontSize                            = 9;//当前字体大小,默认9号.
-    private Color                           current_color                               = Color.BLACK;//当前字色,默认黑色.
     private JDialog                         dialog;                                     //用于显示模态的窗体
     private JLabel                          lblFont;                                    //选择字体的LBL
     private JLabel                          lblStyle;                                   //选择字型的LBL
     private JLabel                          lblSize;                                    //选择字大小的LBL
-    private JLabel                          lblColor;                                   //选择Color的label
-    private JLabel                          otherColor;                                 //其它颜色
+
     private JTextField                      txtFont;                                    //显示选择字体的TEXT
     private JTextField                      txtStyle;                                   //显示选择字型的TEXT
     private JTextField                      txtSize;                                    //显示选择字大小的TEXT
@@ -58,21 +56,20 @@ public class JFontChooser extends JPanel {
     private JList                           lstFont;                                    //选择字体的列表.
     private JList                           lstStyle;                                   //选择字型的列表.
     private JList                           lstSize;                                    //选择字体大小的列表.
-    private JComboBox                       cbColor;                                    //选择Color的下拉框.
+
     private JButton                         ok, cancel;                                 //"确定","取消"按钮.
     private JScrollPane                     spFont;
     private JScrollPane                     spSize;
     private JPanel                          showPan;                                    //显示框.
     private Map                             sizeMap;                                    //字号映射表.
-    private Map                             colorMap;                                   //字着色映射表.
+
     private Font                            selectedfont;                               //用户选择的字体
-    private Color                           selectedcolor;                              //用户选择的颜色
+
     //[end]
 
     //无参初始化
     public JFontChooser(){
         this.selectedfont = null;
-        this.selectedcolor = null;
         /* 初始化界面 */
         init(null,null);
     }
@@ -81,11 +78,9 @@ public class JFontChooser extends JPanel {
     public JFontChooser(Font font, Color color){
         if (font != null) {
             this.selectedfont = font;
-            this.selectedcolor = color;
             this.current_fontName = font.getName();
             this.current_fontSize = font.getSize();
             this.current_fontStyle = font.getStyle();
-            this.current_color = color;
             /* 初始化界面 */
             init(font,color);
         }else{
@@ -102,14 +97,6 @@ public class JFontChooser extends JPanel {
         this.selectedfont = selectedfont;
     }
 
-    public Color getSelectedcolor() {
-        return selectedcolor;
-    }
-
-    public void setSelectedcolor(Color selectedcolor) {
-        this.selectedcolor = selectedcolor;
-    }
-
     /*初始化界面*/
 //  private void init(Font txt_font) {
     private void init(Font font,Color color) {
@@ -117,8 +104,6 @@ public class JFontChooser extends JPanel {
         lblFont = new JLabel("字体:");
         lblStyle = new JLabel("字型:");
         lblSize = new JLabel("大小:");
-        lblColor = new JLabel("颜色:");
-        otherColor = new JLabel("<html><U>其它颜色</U></html>");
         txtFont = new JTextField("宋体");
         txtStyle = new JTextField("常规");
         txtSize = new JTextField("9");
@@ -146,18 +131,6 @@ public class JFontChooser extends JPanel {
         spFont = new JScrollPane(lstFont);
         spSize = new JScrollPane(lstSize);
 
-        //颜色
-        String[] colorStr = new String[]{
-                "黑色", "蓝色", "青色", "深灰", "灰色", "绿色", "浅灰", "洋红", "桔黄", "粉红", "红色", "白色", "黄色"
-        };
-        Color[] colorVal = new Color[]{
-                Color.BLACK, Color.BLUE, Color.CYAN, Color.DARK_GRAY, Color.GRAY, Color.GREEN, Color.LIGHT_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.RED, Color.WHITE, Color.YELLOW
-        };
-        colorMap = new HashMap();
-        for (int i = 0; i < colorStr.length; i++) {
-            colorMap.put(colorStr[i], colorVal[i]);
-        }
-        cbColor = new JComboBox(colorStr);
         showPan = new JPanel();
         ok = new JButton("确定");
         cancel = new JButton("取消");
@@ -167,7 +140,7 @@ public class JFontChooser extends JPanel {
         //字体框
         this.setLayout(null);   //不用布局管理器
         add(lblFont);
-        lblFont.setBounds(12, 10, 30, 20);
+        lblFont.setBounds(12, 10, 50, 20);
         txtFont.setEditable(false);
         add(txtFont);
         txtFont.setBounds(10, 30, 155, 20);
@@ -183,7 +156,7 @@ public class JFontChooser extends JPanel {
 
         //样式
         add(lblStyle);
-        lblStyle.setBounds(175, 10, 30, 20);
+        lblStyle.setBounds(175, 10, 50, 20);
         txtStyle.setEditable(false);
         add(txtStyle);
         txtStyle.setBounds(175, 30, 130, 20);
@@ -208,7 +181,7 @@ public class JFontChooser extends JPanel {
 
         //大小
         add(lblSize);
-        lblSize.setBounds(320, 10, 30, 20);
+        lblSize.setBounds(320, 10, 50, 20);
         txtSize.setEditable(false);
         add(txtSize);
         txtSize.setBounds(320, 30, 60, 20);
@@ -221,16 +194,6 @@ public class JFontChooser extends JPanel {
             txtSize.setText(Integer.toString(font.getSize()));
         }
 
-        //颜色
-        add(lblColor);
-        lblColor.setBounds(18, 220, 30, 20);
-        cbColor.setBounds(18, 245, 100, 22);
-        cbColor.setMaximumRowCount(5);
-        add(cbColor);
-        otherColor.setForeground(Color.blue);
-        otherColor.setBounds(130, 245, 60, 22);
-        otherColor.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        add(otherColor);
 
         //展示框
         showTF = new JTextField();
@@ -255,9 +218,9 @@ public class JFontChooser extends JPanel {
         //确定和取消按钮
 
         add(ok);
-        ok.setBounds(230, 245, 60, 20);
+        ok.setBounds(230, 245, 70, 20);
         add(cancel);
-        cancel.setBounds(300, 245, 60, 20);
+        cancel.setBounds(300, 245, 70, 20);
         //布局控件_结束
 
         //listener.....
@@ -277,19 +240,20 @@ public class JFontChooser extends JPanel {
                 if (value.equals("常规")) {
                     current_fontStyle = Font.PLAIN;
                 }
-                if (value.equals("斜休")) {
+                if (value.equals("斜体")) {
                     current_fontStyle = Font.ITALIC;
                 }
-                if (value.equals("粗休")) {
+                if (value.equals("粗体")) {
                     current_fontStyle = Font.BOLD;
                 }
-                if (value.equals("粗斜休")) {
+                if (value.equals("粗斜体")) {
                     current_fontStyle = Font.BOLD | Font.ITALIC;
                 }
                 txtStyle.setText(value);
                 showTF.setFont(new Font(current_fontName, current_fontStyle, current_fontSize));
             }
         });
+
 
         /*用户选择字体大小*/
         lstSize.addListSelectionListener(new ListSelectionListener() {
@@ -300,34 +264,14 @@ public class JFontChooser extends JPanel {
             }
         });
 
-        /*用户选择字体颜色*/
-        cbColor.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                current_color = (Color) colorMap.get(cbColor.getSelectedItem());
-                showTF.setForeground(current_color);
-            }
-        });
 
-        /*其它颜色*/
-        otherColor.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Color col_temp = new JColorChooser().showDialog(null, null, Color.pink);
-                if (col_temp != null) {
-                    current_color = col_temp;
-                    showTF.setForeground(current_color);
-                    super.mouseClicked(e);
-                }
-            }
-        });
+
 
         /*用户确定*/
         ok.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 /*用户用户选择的字体设置*/
                 setSelectedfont(new Font(current_fontName, current_fontStyle, current_fontSize));
-                /*用户用户选择的颜色设置*/
-                setSelectedcolor(current_color);
                 dialog.dispose();
                 dialog = null;
             }
@@ -348,7 +292,7 @@ public class JFontChooser extends JPanel {
         dialog = new JDialog(parent, title,true);
         dialog.add(this);
         dialog.setResizable(false);
-        dialog.setSize(500, 500);
+        dialog.setSize(400, 310);
         //设置接界面的启动位置
         dialog.setLocation(x,y);
         dialog.addWindowListener(new WindowAdapter() {
@@ -371,11 +315,9 @@ public class JFontChooser extends JPanel {
         //获取选择的字体
         Font font=one.getSelectedfont();
         //获取选择的颜色
-        Color color=one.getSelectedcolor();
-        if(font!=null&&color!=null){
+        if(font!=null){
             /*打印用户选择的字体和颜色*/
             System.out.println(font);
-            System.out.println(color);
         }
     }
 }
