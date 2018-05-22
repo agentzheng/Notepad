@@ -2,7 +2,6 @@ package com.elliott.notepad.view;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.*;
-import java.security.Key;
 
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
@@ -24,7 +23,7 @@ public class MainFrame extends JFrame{
 	//use for mouse right click menu
 	private JPopupMenu popMenu = new JPopupMenu();     //右击鼠标弹出的菜单
 	//use for auto wrap
-	public JMenuItem lineItem = new JMenuItem(); //自动换行选项
+	public JCheckBoxMenuItem lineCheckItem = new JCheckBoxMenuItem (); //自动换行选项
 	//use for choose font
 	public JMenuItem fontItem = new JMenuItem(); //字体选项
 	//use for undo function
@@ -81,6 +80,7 @@ public class MainFrame extends JFrame{
 		//新建
 		//new file function
 		JMenuItem newItem = new JMenuItem();
+		newItem.setMnemonic(KeyEvent.VK_N);
 		newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,InputEvent.CTRL_MASK));
 		newItem.setText("\t新建\t(N)");
 		newItem.addActionListener(new ActionListener(){
@@ -95,6 +95,7 @@ public class MainFrame extends JFrame{
 		//打开
 		//open file function
 		JMenuItem openItem = new JMenuItem();
+		openItem.setMnemonic(KeyEvent.VK_O);
 		openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,InputEvent.CTRL_MASK));
 		openItem.setText("\t打开\t(O)...");
 		openItem.addActionListener(new ActionListener(){
@@ -110,6 +111,7 @@ public class MainFrame extends JFrame{
 		//save file function
 		JMenuItem saveItem = new JMenuItem();
 		saveItem.setText("\t保存\t(S)");
+		saveItem.setMnemonic(KeyEvent.VK_S);
 		saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.CTRL_MASK));
 		//saveItem.setEnabled(false);
 		saveItem.addActionListener(new ActionListener(){
@@ -124,6 +126,7 @@ public class MainFrame extends JFrame{
 		//另存为
 		//save as file function
 		JMenuItem saveForItem = new JMenuItem();
+		saveForItem.setMnemonic(KeyEvent.VK_A);
 		saveForItem.setText("\t另存为\t(A)...");
 		saveForItem.addActionListener(new ActionListener(){
 
@@ -138,6 +141,7 @@ public class MainFrame extends JFrame{
 		//exit function
 		JMenuItem exitItem = new JMenuItem();
 		exitItem.setText("\t退出\t(X)");
+		exitItem.setMnemonic(KeyEvent.VK_X);
 		exitItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -221,9 +225,10 @@ public class MainFrame extends JFrame{
 		//撤销
 		//undo function
 		JMenuItem rollbackItem = new JMenuItem();
+		rollbackItem.setMnemonic(KeyEvent.VK_U);
 		rollbackItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,InputEvent.CTRL_MASK));
 
-		rollbackItem.setText("\t撤销");
+		rollbackItem.setText("\t撤销(U)");
 		rollbackItem.addActionListener(new ActionListener(){
 
 			@Override
@@ -300,17 +305,20 @@ public class MainFrame extends JFrame{
 		formatMenu.setMnemonic(KeyEvent.VK_O);
 		//自动换行
 		//auto wrap
-		lineItem = new JMenuItem();
-		lineItem.setText("\t√自动换行");
-		lineItem.addActionListener(new ActionListener(){
+		lineCheckItem.setState(true);
 
+		lineCheckItem.setMnemonic(KeyEvent.VK_W);
+		lineCheckItem.setText("自动换行(W)");
+		lineCheckItem.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.lineWrap();
+				body.setLineWrap(lineCheckItem.getState());
 			}
 			
 		});
-		fontItem = new JMenuItem("\t字体");
+
+		fontItem = new JMenuItem("\t字体(F)");
+		fontItem.setMnemonic(KeyEvent.VK_F);
 
 		fontItem.addActionListener(new ActionListener(){
 
@@ -328,7 +336,7 @@ public class MainFrame extends JFrame{
 
 		});
 
-		formatMenu.add(lineItem);
+		formatMenu.add(lineCheckItem);
 		formatMenu.add(fontItem);
 		mb.add(formatMenu);
 
@@ -530,52 +538,78 @@ public class MainFrame extends JFrame{
 	{
 		//查找对话框
 		JDialog search=new JDialog(this,"查找");
-		search.setSize(400, 100);
+		search.setSize(500, 200);
 		search.setLocation(450,350);
-		JLabel label_1=new JLabel("查找内容");
+		JLabel label_1=new JLabel("查找内容:");
 
 		final JTextField textField_1=new JTextField(5);
 		textField_1.setText(str);
-		JButton buttonFind=new JButton("查找下一个");
-		JButton buttonCancel=new JButton("取消");
+		JButton findBtn=new JButton("查找下一个");
 
-		JPanel panel=new JPanel(new GridLayout(3,2));
+		JButton cancelBtn=new JButton("取消");
+		JPanel panel=new JPanel(null);
+
+		final JCheckBox matchCheckBox=new JCheckBox("区分大小写(C)");
+
+		ButtonGroup bGroup=new ButtonGroup();
+		final JRadioButton upButton=new JRadioButton("向上(U)");
+		final JRadioButton downButton=new JRadioButton("向下(U)");
+		downButton.setSelected(true);
+		bGroup.add(upButton);
+		bGroup.add(downButton);
+
+		JPanel directionPanel=new JPanel();
+		directionPanel.setBorder(BorderFactory.createTitledBorder("方向"));
+		//设置directionPanel组件的边框;
+		//BorderFactory.createTitledBorder(String title)创建一个新标题边框，使用默认边框（浮雕化）、默认文本位置（位于顶线上）、默认调整 (leading) 以及由当前外观确定的默认字体和文本颜色，并指定了标题文本。
+
+
+		label_1.setBounds(10,30,80,30);
+
+
+		textField_1.setBounds(label_1.getX()+ label_1.getWidth()+5,label_1.getY(),240,label_1.getHeight());
+
+        //查找下一个按钮
+		findBtn.setBounds(textField_1.getX()+textField_1.getWidth()+30,label_1.getY(),120,30);
+		cancelBtn.setBounds(findBtn.getX(),findBtn.getY()+findBtn.getHeight()+20,findBtn.getWidth(),findBtn.getHeight());
+
+        matchCheckBox.setBounds(label_1.getX(),textField_1.getY()+textField_1.getHeight()+30,120,60);
+		directionPanel.setLayout(new GridLayout(1,2));
+		directionPanel.setBounds(matchCheckBox.getX()+matchCheckBox.getWidth(),matchCheckBox.getY(),200,60);
+		directionPanel.add(upButton);
+		directionPanel.add(downButton);
+
+
+
+
 
 		panel.add(label_1);
 		panel.add(textField_1);
-		panel.add(buttonFind);
-		panel.add(buttonCancel);
+
+		panel.add(findBtn);
+		panel.add(cancelBtn);
+
+
+        panel.add(matchCheckBox);
+        panel.add(directionPanel);
+
 		search.add(panel);
+
 		search.setVisible(true);
+		search.setResizable(false);
 
 
 		//为查找下一个 按钮绑定监听事件
-		buttonFind.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				String findText=textField_1.getText();//查找的字符串
-
-				String textArea=body.getText();//当前文本框的内容
-				start=textArea.indexOf(findText,end);
-				end=start+findText.length();
-				if(start==-1)//没有找到
-				{
-					JOptionPane.showMessageDialog(null,"找不到\""+findText+"\"","记事本",JOptionPane.WARNING_MESSAGE);
-					body.select(start, end);
-				}
-				else
-				{
-					body.select(start,end);
-				}
-
-			}
-		});
+        findBtn.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e) {
+                boolean isDown=downButton.isSelected();
+                Myfind(matchCheckBox.isSelected(),textField_1.getText(),isDown);
+            }
+        });
 
 
-
-		buttonCancel.addActionListener(new ActionListener() {
+		cancelBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				search.dispose();
@@ -590,13 +624,13 @@ public class MainFrame extends JFrame{
 
 		//替换对话框
 		JDialog search=new JDialog(this,"替换");
-		search.setSize(500, 300);
+		search.setSize(500, 250);
 		search.setLocation(450,350);
 		JLabel label_1=new JLabel("查找内容:");
 		JLabel label_2=new JLabel("替换为:");
-		final JTextField textField_1=new JTextField(5);
-		textField_1.setText(str);
-		final JTextField textField_2=new JTextField(5);
+		final JTextField findText=new JTextField(5);
+		findText.setText(str);
+		final JTextField replaceText=new JTextField(5);
 		JButton findBtn=new JButton("查找下一个");
 		JButton replaceBtn=new JButton("替换");
 		JButton replaceAllBtn=new JButton("替换全部");
@@ -606,28 +640,34 @@ public class MainFrame extends JFrame{
 		label_1.setBounds(10,30,80,30);
 		label_2.setBounds(label_1.getX(),label_1.getY()+label_1.getHeight()+5,label_1.getWidth(),label_1.getHeight());
 
-		textField_1.setBounds(label_1.getX()+ label_1.getWidth()+5,label_1.getY(),220,label_1.getHeight());
-		textField_2.setBounds(label_2.getX()+label_2.getWidth()+5,label_2.getY(),textField_1.getWidth(),textField_1.getHeight());
+		findText.setBounds(label_1.getX()+ label_1.getWidth()+5,label_1.getY(),220,label_1.getHeight());
+		replaceText.setBounds(label_2.getX()+label_2.getWidth()+5,label_2.getY(),findText.getWidth(),findText.getHeight());
 
-		findBtn.setBounds(textField_1.getX()+textField_1.getWidth()+10,label_1.getY(),120,30);
+		findBtn.setBounds(findText.getX()+findText.getWidth()+10,label_1.getY(),120,30);
 		replaceBtn.setBounds(findBtn.getX(),findBtn.getY()+findBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
 		replaceAllBtn.setBounds(findBtn.getX(),replaceBtn.getY()+replaceBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
 		cancelBtn.setBounds(findBtn.getX(),replaceAllBtn.getY()+replaceAllBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
 
 
-		JCheckBox matchCase=new JCheckBox();
+        final JCheckBox matchCheckBox=new JCheckBox("区分大小写(C)");
+        matchCheckBox.setBounds(label_1.getX(),replaceText.getY()+replaceText.getHeight()+30,120,60);
 
 		panel.add(label_1);
-		panel.add(textField_1);
+		panel.add(findText);
 		panel.add(label_2);
-		panel.add(textField_2);
+		panel.add(replaceText);
 
 		panel.add(findBtn);
 		panel.add(replaceBtn);
 		panel.add(replaceAllBtn);
 		panel.add(cancelBtn);
 
+
+		panel.add(matchCheckBox);
+
 		panel.setVisible(true);
+
+
 		search.add(panel);
 		search.setVisible(true);
 		search.setResizable(false);
@@ -636,41 +676,85 @@ public class MainFrame extends JFrame{
 
 
 		//为查找下一个 按钮绑定监听事件
-		findBtn.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				String findText=textField_1.getText();//查找的字符串
+        findBtn.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e) {
+                Myfind(matchCheckBox.isSelected(),findText.getText(),true);
+            }
 
-				String textArea=body.getText();//当前文本框的内容
-				start=textArea.indexOf(findText,end);
-				end=start+findText.length();
-				if(start==-1)//没有找到
-				{
-					JOptionPane.showMessageDialog(null,"没找到"+findText,"记事本",JOptionPane.WARNING_MESSAGE);
-					body.select(start, end);
-				}
-				else
-				{
-					body.select(start,end);
-				}
+        });
 
-			}
-		});
+        //"替换"按钮监听
+        replaceBtn.addActionListener(new ActionListener() {
 
-		//为替换按钮绑定监听时间
-		replaceBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(body.getSelectedText()==null) {
+                    Myfind(matchCheckBox.isSelected(),findText.getText(),true);
+                }
+                else{
+                    body.replaceSelection(replaceText.getText());
+                    Myfind(matchCheckBox.isSelected(),findText.getText(),true);
+                }
+        }
+        });//"替换"按钮监听结束
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				String changeText=textField_2.getText();//替换的字符串
-				body.select(start, end);
-				body.replaceSelection(changeText);
-				body.select(start, end);
-			}
-		});
+        //"全部替换"按钮监听
+        replaceAllBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                body.setCaretPosition(0);   //将光标放到编辑区开头
+                int k=0,m=0,replaceCount=0;
+                if(findText.getText().length()==0) {
+                    JOptionPane.showMessageDialog(null,"请填写查找内容!","提示",JOptionPane.WARNING_MESSAGE);
+                    findText.requestFocus(true);
+                    return;
+                }
+                while(k>-1)//当文本中有内容被选中时(k>-1被选中)进行替换，否则不进行while循环
+                {   //"区分大小写(C)"的JCheckBox是否被选中
+                    //int k=0,m=0;
+                    final String str1,str2,str3,str4,strA,strB;
+                    str1=body.getText();
+                    str2=findText.getText();
+                    str3=str1.toUpperCase();
+                    str4=str2.toUpperCase();
+                    if(matchCheckBox.isSelected())//区分大小写
+                    {   strA=str1;
+                        strB=str2;
+                    }
+                    else//不区分大小写,此时把所选内容全部化成大写(或小写)，以便于查找
+                    {   strA=str3;
+                        strB=str4;
+                    }
+                    if(body.getSelectedText()==null)
+                        k=strA.indexOf(strB,body.getCaretPosition()+1);
+                    else
+                        k=strA.indexOf(strB, body.getCaretPosition()-findText.getText().length()+1);
+                    if(k>-1) {   //String strData=strA.subString(k,strB.getText().length()+1);
+                        body.setCaretPosition(k);
+                        body.select(k,k+strB.length());
+                    }
+                    else {
+                        if(replaceCount==0) {
+                            JOptionPane.showMessageDialog(null, "找不到您查找的内容!", "记事本",JOptionPane.INFORMATION_MESSAGE);
+                        }
+                        else {
+                            JOptionPane.showMessageDialog(null,"成功替换"+replaceCount+"个匹配内容!","替换成功",JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    }
+                }
+            if(replaceText.getText().length()==0 && body.getSelectedText()!= null)
+            {   body.replaceSelection("");
+                replaceCount++;
+            }
+
+            if(replaceText.getText().length()>0 && body.getSelectedText()!= null)
+            {   body.replaceSelection(replaceText.getText());
+                replaceCount++;
+            }
+        }//while循环结束
+
+        });//"替换全部"方法结束
+
 
 		cancelBtn.addActionListener(new ActionListener() {
 			@Override
@@ -679,6 +763,56 @@ public class MainFrame extends JFrame{
 			}
 		});
 	}
+
+	void Myfind(boolean matchCase,String findText,boolean isDown)
+    {
+        int k=0,m=0;
+        final String source,strA,strB;
+        source=body.getText();
+
+
+        //"区分大小写(C)"的JCheckBox是否被选中
+        if(matchCase) {//区分大小写
+            strA=source;
+            strB=findText;
+        }
+        else{ //不区分大小写,此时把所选内容全部化成大写(或小写)，以便于查找
+            strA=source.toUpperCase();
+            strB=findText.toUpperCase();
+        }
+
+
+        if(!isDown)
+        {
+            if(body.getSelectedText()==null)
+                k=strA.lastIndexOf(strB,body.getCaretPosition()-1);
+            else
+                k=strA.lastIndexOf(strB, body.getCaretPosition()-findText.length()-1);
+            if(k>-1) {   //String strData=strA.subString(k,strB.getText().length()+1);
+                body.setCaretPosition(k);
+                body.select(k,k+strB.length());
+            }
+            else {
+                JOptionPane.showMessageDialog(null,"找不到您查找的内容！","查找",JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+        else {
+            if(body.getSelectedText()==null)
+                k=strA.indexOf(strB,body.getCaretPosition()+1);
+            else {
+                k = strA.indexOf(strB, body.getCaretPosition() - findText.length() + 1);
+            }
+            if(k>-1) {   //String strData=strA.subString(k,strB.getText().length()+1);
+                body.setCaretPosition(k);
+                body.select(k,k+strB.length());
+            }
+            else {
+                JOptionPane.showMessageDialog(null,"找不到您查找的内容！","查找",JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
+
+
 
 	public MainFrame(){
 		init();

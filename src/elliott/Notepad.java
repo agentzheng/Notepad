@@ -535,7 +535,8 @@ public class Notepad extends JFrame implements ActionListener,DocumentListener
         {   public void actionPerformed(ActionEvent e)  
             {   replaceDialog.dispose();  
             }  
-        });  
+        });
+
         final JCheckBox matchCheckBox=new JCheckBox("区分大小写(C)");  
         ButtonGroup bGroup=new ButtonGroup();  
         final JRadioButton upButton=new JRadioButton("向上(U)");  

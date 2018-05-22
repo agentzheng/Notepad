@@ -1,12 +1,9 @@
 package com.elliott.notepad.controller;
 
-import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -125,6 +122,7 @@ public class Controller {
 			while((str=br.readLine())!=null){
 				mf.body.append(str+"\n");
 			}
+			mf.body.setCaretPosition(0); //将光标放在最前面
 			br.close();
 			//update the title for application frame
 			updateTitle();//更新标题
@@ -297,20 +295,7 @@ public class Controller {
 			}
 		}
 	}
-	
-	//自动换行
-	//auto wrap
-	public void lineWrap(){
-		//not use auto wrap
-		if(mf.body.getLineWrap()){
-			mf.body.setLineWrap(false);
-			mf.lineItem.setText("自动换行");
-		//use auto wrap
-		}else{
-			mf.body.setLineWrap(true);
-			mf.lineItem.setText("√自动换行");
-		}		
-	}
+
 	
 	//关于
 	//mainPgae
