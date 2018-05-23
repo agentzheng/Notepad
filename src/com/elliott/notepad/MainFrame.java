@@ -1,13 +1,10 @@
-package com.elliott.notepad.view;
+package com.elliott.notepad;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
-
-import com.elliott.notepad.JFontChooser;
-import com.elliott.notepad.controller.Controller;
 
 
 public class MainFrame extends JFrame{
@@ -604,7 +601,7 @@ public class MainFrame extends JFrame{
         {
             public void actionPerformed(ActionEvent e) {
                 boolean isDown=downButton.isSelected();
-                Myfind(matchCheckBox.isSelected(),textField_1.getText(),isDown);
+                myFind(matchCheckBox.isSelected(),textField_1.getText(),isDown);
             }
         });
 
@@ -680,9 +677,8 @@ public class MainFrame extends JFrame{
         findBtn.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e) {
-                Myfind(matchCheckBox.isSelected(),findText.getText(),true);
+                myFind(matchCheckBox.isSelected(),findText.getText(),true);
             }
-
         });
 
         //"替换"按钮监听
@@ -690,11 +686,11 @@ public class MainFrame extends JFrame{
 
             public void actionPerformed(ActionEvent e) {
                 if(body.getSelectedText()==null) {
-                    Myfind(matchCheckBox.isSelected(),findText.getText(),true);
+                    myFind(matchCheckBox.isSelected(),findText.getText(),true);
                 }
                 else{
                     body.replaceSelection(replaceText.getText());
-                    Myfind(matchCheckBox.isSelected(),findText.getText(),true);
+                    myFind(matchCheckBox.isSelected(),findText.getText(),true);
                 }
         }
         });//"替换"按钮监听结束
@@ -702,55 +698,9 @@ public class MainFrame extends JFrame{
         //"全部替换"按钮监听
         replaceAllBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                body.setCaretPosition(0);   //将光标放到编辑区开头
-                int k=0,m=0,replaceCount=0;
-                if(findText.getText().length()==0) {
-                    JOptionPane.showMessageDialog(null,"请填写查找内容!","提示",JOptionPane.WARNING_MESSAGE);
-                    findText.requestFocus(true);
-                    return;
-                }
-                while(k>-1)//当文本中有内容被选中时(k>-1被选中)进行替换，否则不进行while循环
-                {   //"区分大小写(C)"的JCheckBox是否被选中
-                    //int k=0,m=0;
-                    final String str1,str2,str3,str4,strA,strB;
-                    str1=body.getText();
-                    str2=findText.getText();
-                    str3=str1.toUpperCase();
-                    str4=str2.toUpperCase();
-                    if(matchCheckBox.isSelected())//区分大小写
-                    {   strA=str1;
-                        strB=str2;
-                    }
-                    else//不区分大小写,此时把所选内容全部化成大写(或小写)，以便于查找
-                    {   strA=str3;
-                        strB=str4;
-                    }
-                    if(body.getSelectedText()==null)
-                        k=strA.indexOf(strB,body.getCaretPosition()+1);
-                    else
-                        k=strA.indexOf(strB, body.getCaretPosition()-findText.getText().length()+1);
-                    if(k>-1) {   //String strData=strA.subString(k,strB.getText().length()+1);
-                        body.setCaretPosition(k);
-                        body.select(k,k+strB.length());
-                    }
-                    else {
-                        if(replaceCount==0) {
-                            JOptionPane.showMessageDialog(null, "找不到您查找的内容!", "记事本",JOptionPane.INFORMATION_MESSAGE);
-                        }
-                        else {
-                            JOptionPane.showMessageDialog(null,"成功替换"+replaceCount+"个匹配内容!","替换成功",JOptionPane.INFORMATION_MESSAGE);
-                        }
-                    }
-                }
-            if(replaceText.getText().length()==0 && body.getSelectedText()!= null)
-            {   body.replaceSelection("");
-                replaceCount++;
-            }
-
-            if(replaceText.getText().length()>0 && body.getSelectedText()!= null)
-            {   body.replaceSelection(replaceText.getText());
-                replaceCount++;
-            }
+                String replaced=body.getText().replace(findText.getText(),replaceText.getText());
+                body.setText(replaced);
+                body.setCaretPosition(0);
         }//while循环结束
 
         });//"替换全部"方法结束
@@ -764,7 +714,7 @@ public class MainFrame extends JFrame{
 		});
 	}
 
-	void Myfind(boolean matchCase,String findText,boolean isDown)
+	void myFind(boolean matchCase, String findText, boolean isDown)
     {
         int k=0,m=0;
         final String source,strA,strB;

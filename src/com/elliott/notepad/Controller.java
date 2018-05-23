@@ -1,4 +1,4 @@
-package com.elliott.notepad.controller;
+package com.elliott.notepad;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -15,8 +15,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 import javax.swing.*;
-
-import com.elliott.notepad.view.MainFrame;
 
 public class Controller {
 
