@@ -1,18 +1,22 @@
 package com.elliott.notepad;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.undo.UndoManager;
 
 
-public class MainFrame extends JFrame{
+public class MainFrame extends JFrame implements DocumentListener {
  
 	private static final long serialVersionUID = 1L;
 	//set the default file name as no title
 	public String fileName = "无标题";
-	private Controller con;
+	private Controller controller;
 	private JScrollPane sp = new JScrollPane();
 	public JTextArea body = new JTextArea();
 	//use for paste function
@@ -27,12 +31,28 @@ public class MainFrame extends JFrame{
 	public UndoManager undoMgr = new UndoManager(); //撤销管理器
 	//use clipboard to temporary storage of information
 	public Clipboard clipboard = null; //剪贴板
-	
+
+    //创建和添加状态栏
+	public JLabel statusLabel=new JLabel("第1行，第1列        ",SwingConstants.RIGHT);
+
 	public void setController(Controller con){
-		this.con = con;
+		this.controller = con;
 	}
 
-	//相关变量
+    String pattern = "第{0}行，第{1}列        ";
+
+    public JMenuItem rollbackItem = new JMenuItem();
+
+    private ArrayList<JMenuItem> searchActions=new ArrayList<>();
+    private ArrayList<JMenuItem>selectActions=new ArrayList<>();
+    private boolean searchEnable=false;
+
+
+    //系统剪贴板
+    Toolkit toolkit=Toolkit.getDefaultToolkit();
+    Clipboard clipBoard=toolkit.getSystemClipboard();
+
+    //相关变量
 	int start=0;//查找开始位置
 	int end=0;//查找结束位置
 
@@ -48,7 +68,30 @@ public class MainFrame extends JFrame{
 		//设置默认字体
 		body.setFont(new Font("微软雅黑", Font.PLAIN, 18));
 
-		//set application title as file name plus simple notepad
+        //添加插入符侦听器，以便侦听任何插入符的更改通知。
+        body.addCaretListener(new CaretListener() {
+            public void caretUpdate(CaretEvent e) {
+                try {
+                    //e.getDot() 获得插入符的位置。
+                    int offset = e.getDot() ;
+
+                    //getLineOfOffset(int offset)  将组件文本中的偏移量转换为行号
+                    int row = body.getLineOfOffset(offset);
+
+                    //getLineStartOffset(int line)   取得给定行起始处的偏移量。
+                    //getLineEndOffset(int line)     取得给定行结尾处的偏移量。
+                    int col = e.getDot() - body.getLineStartOffset(row);
+                    String status = MessageFormat.format(pattern,Integer.toString(row+1),Integer.toString(col+1));
+                    statusLabel.setText(status);
+                    // 在状态栏中显示当前光标所在行号、所在列号
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        //设置标题
 		this.setTitle(fileName+" - 记事本");
 		this.setSize(1500,800);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -57,7 +100,7 @@ public class MainFrame extends JFrame{
 			@Override
 			public void windowClosing(WindowEvent e) {
 				//overwrite close function
-				con.exit(); //重写默认关闭按钮		
+				controller.exit(); //重写默认关闭按钮
 			}
 
 		});
@@ -74,6 +117,7 @@ public class MainFrame extends JFrame{
 		fileMenu.setText("文件(F)");
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 
+
 		//新建
 		//new file function
 		JMenuItem newItem = new JMenuItem();
@@ -84,7 +128,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.createFile();
+				controller.createFile();
 			}
 			
 		});
@@ -99,7 +143,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.openFile();
+				controller.openFile();
 			}
 			
 		});
@@ -115,7 +159,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.saveFile();
+				controller.saveFile();
 			}
 			
 		});
@@ -129,7 +173,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.saveForFile();
+				controller.saveForFile();
 			}
 			
 		});
@@ -143,7 +187,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.exit();
+				controller.exit();
 			}
 			
 		});
@@ -161,8 +205,22 @@ public class MainFrame extends JFrame{
 		JMenu editMenu = new JMenu();
 		editMenu.setText("\t编辑(E)");
 		editMenu.setMnemonic(KeyEvent.VK_E);
-		
-		//剪切
+
+
+        //当选择编辑菜单时，设置剪切、复制、粘贴、删除等功能的可用性
+        editMenu.addMenuListener(new MenuListener() {
+            public void menuCanceled(MenuEvent e) {
+                checkMenuItemEnabled();
+            }
+            public void menuDeselected(MenuEvent e) {
+                checkMenuItemEnabled();
+            }
+            public void menuSelected(MenuEvent e){
+                checkMenuItemEnabled();
+            }
+        });
+
+        //剪切
 		//cut function
 		final JMenuItem cutItem = new JMenuItem();
 		cutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X,InputEvent.CTRL_MASK));
@@ -171,7 +229,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.cut();				
+				controller.cut();
 			}
 			
 		});
@@ -185,7 +243,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.copy();
+				controller.copy();
 			}
 			
 		});
@@ -199,7 +257,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.paste();
+				controller.paste();
 			}
 			
 		});
@@ -214,14 +272,14 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.selectAll();
+				controller.selectAll();
 			}
 			
 		});
 		
 		//撤销
 		//undo function
-		JMenuItem rollbackItem = new JMenuItem();
+        rollbackItem.setEnabled(false);
 		rollbackItem.setMnemonic(KeyEvent.VK_U);
 		rollbackItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,InputEvent.CTRL_MASK));
 
@@ -230,7 +288,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.rollback();
+				controller.rollback();
 			}
 			
 		});
@@ -243,7 +301,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				find(body.getSelectedText());
+				controller.find(body.getSelectedText());
 			}
 
 		});
@@ -256,7 +314,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				replace(body.getSelectedText());
+				controller.replace(body.getSelectedText());
 			}
 
 		});
@@ -341,8 +399,14 @@ public class MainFrame extends JFrame{
 		//查看 菜单
 		JMenu viewMenu = new JMenu("查看(V)");
 		viewMenu.setMnemonic(KeyEvent.VK_V);
-		JMenuItem statusItem=new JMenuItem("\t状态栏(S)");
-		statusItem.setEnabled(false);
+        JCheckBoxMenuItem statusItem=new JCheckBoxMenuItem("\t状态栏(S)");
+        statusItem.setState(true);
+		statusItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                statusLabel.setVisible(statusItem.getState());
+            }
+        });
 
 		viewMenu.add(statusItem);
 		mb.add(viewMenu);
@@ -358,7 +422,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.mainPgae();
+				controller.mainPgae();
 			}
 			
 		});
@@ -367,7 +431,7 @@ public class MainFrame extends JFrame{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				con.about();
+				controller.about();
 			}
 
 		});
@@ -387,7 +451,7 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				popMenu.setVisible(false);
-				con.cut();				
+				controller.cut();
 			}
 			
 		});
@@ -401,7 +465,7 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				popMenu.setVisible(false);
-				con.copy();
+				controller.copy();
 			}
 			
 		});
@@ -415,7 +479,7 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				popMenu.setVisible(false);
-				con.paste();
+				controller.paste();
 			}
 			
 		});
@@ -429,7 +493,7 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				popMenu.setVisible(false);
-				con.selectAll();
+				controller.selectAll();
 			}
 			
 		});
@@ -443,7 +507,7 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				popMenu.setVisible(false);
-				con.rollback();
+				controller.rollback();
 			}
 			
 		});
@@ -456,7 +520,7 @@ public class MainFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				popMenu.setVisible(false);
-				find(body.getSelectedText());
+				controller.find(body.getSelectedText());
 			}
 
 		});
@@ -475,7 +539,7 @@ public class MainFrame extends JFrame{
 			//if the keyboard has been pressed,sign it as the file has been edited
 			@Override
 			public void keyTyped(KeyEvent e) {
-				con.isEdited = true;				
+				controller.isEdited = true;
 			}
 	
 		});
@@ -520,246 +584,73 @@ public class MainFrame extends JFrame{
 		//add undo manager to the frame
 		body.getDocument().addUndoableEditListener(undoMgr);
 
+        body.getDocument().addDocumentListener(this);
+
 		//设置滚动条一直存在，像windows 的notepad 一样
 		sp.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sp.setViewportView(body);
 
 		this.add(sp);
 
+
+
+		this.add(statusLabel,BorderLayout.SOUTH);//向窗口添加状态栏标签
+
 		//get the system's clipboard
 		clipboard = getToolkit().getSystemClipboard();//获取系统剪贴板
 
-	}
-
-	public void find(String str)
-	{
-		//查找对话框
-		JDialog search=new JDialog(this,"查找");
-		search.setSize(500, 200);
-		search.setLocation(450,350);
-		JLabel label_1=new JLabel("查找内容:");
-
-		final JTextField textField_1=new JTextField(5);
-		textField_1.setText(str);
-		JButton findBtn=new JButton("查找下一个");
-
-		JButton cancelBtn=new JButton("取消");
-		JPanel panel=new JPanel(null);
-
-		final JCheckBox matchCheckBox=new JCheckBox("区分大小写(C)");
-
-		ButtonGroup bGroup=new ButtonGroup();
-		final JRadioButton upButton=new JRadioButton("向上(U)");
-		final JRadioButton downButton=new JRadioButton("向下(U)");
-		downButton.setSelected(true);
-		bGroup.add(upButton);
-		bGroup.add(downButton);
-
-		JPanel directionPanel=new JPanel();
-		directionPanel.setBorder(BorderFactory.createTitledBorder("方向"));
-		//设置directionPanel组件的边框;
-		//BorderFactory.createTitledBorder(String title)创建一个新标题边框，使用默认边框（浮雕化）、默认文本位置（位于顶线上）、默认调整 (leading) 以及由当前外观确定的默认字体和文本颜色，并指定了标题文本。
 
 
-		label_1.setBounds(10,30,80,30);
+        searchActions.add(findItem);
+        searchActions.add(replaceItem);
 
+        for(JMenuItem item:searchActions) {
+            item.setEnabled(false);
+        }
 
-		textField_1.setBounds(label_1.getX()+ label_1.getWidth()+5,label_1.getY(),240,label_1.getHeight());
+        selectActions.add(cutItem);
+        selectActions.add(copyItem);
 
-        //查找下一个按钮
-		findBtn.setBounds(textField_1.getX()+textField_1.getWidth()+30,label_1.getY(),120,30);
-		cancelBtn.setBounds(findBtn.getX(),findBtn.getY()+findBtn.getHeight()+20,findBtn.getWidth(),findBtn.getHeight());
+        for(JMenuItem item:selectActions) {
+            item.setEnabled(false);
+        }
 
-        matchCheckBox.setBounds(label_1.getX(),textField_1.getY()+textField_1.getHeight()+30,120,60);
-		directionPanel.setLayout(new GridLayout(1,2));
-		directionPanel.setBounds(matchCheckBox.getX()+matchCheckBox.getWidth(),matchCheckBox.getY(),200,60);
-		directionPanel.add(upButton);
-		directionPanel.add(downButton);
-
-
-
-
-
-		panel.add(label_1);
-		panel.add(textField_1);
-
-		panel.add(findBtn);
-		panel.add(cancelBtn);
-
-
-        panel.add(matchCheckBox);
-        panel.add(directionPanel);
-
-		search.add(panel);
-
-		search.setVisible(true);
-		search.setResizable(false);
-
-
-		//为查找下一个 按钮绑定监听事件
-        findBtn.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e) {
-                boolean isDown=downButton.isSelected();
-                myFind(matchCheckBox.isSelected(),textField_1.getText(),isDown);
-            }
-        });
-
-
-		cancelBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				search.dispose();
-			}
-		});
 
 
 	}
 
-	public void replace(String str)
-	{
-
-		//替换对话框
-		JDialog search=new JDialog(this,"替换");
-		search.setSize(500, 250);
-		search.setLocation(450,350);
-		JLabel label_1=new JLabel("查找内容:");
-		JLabel label_2=new JLabel("替换为:");
-		final JTextField findText=new JTextField(5);
-		findText.setText(str);
-		final JTextField replaceText=new JTextField(5);
-		JButton findBtn=new JButton("查找下一个");
-		JButton replaceBtn=new JButton("替换");
-		JButton replaceAllBtn=new JButton("替换全部");
-		JButton cancelBtn=new JButton("取消");
-		JPanel panel=new JPanel(null);
-
-		label_1.setBounds(10,30,80,30);
-		label_2.setBounds(label_1.getX(),label_1.getY()+label_1.getHeight()+5,label_1.getWidth(),label_1.getHeight());
-
-		findText.setBounds(label_1.getX()+ label_1.getWidth()+5,label_1.getY(),220,label_1.getHeight());
-		replaceText.setBounds(label_2.getX()+label_2.getWidth()+5,label_2.getY(),findText.getWidth(),findText.getHeight());
-
-		findBtn.setBounds(findText.getX()+findText.getWidth()+10,label_1.getY(),120,30);
-		replaceBtn.setBounds(findBtn.getX(),findBtn.getY()+findBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
-		replaceAllBtn.setBounds(findBtn.getX(),replaceBtn.getY()+replaceBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
-		cancelBtn.setBounds(findBtn.getX(),replaceAllBtn.getY()+replaceAllBtn.getHeight()+5,findBtn.getWidth(),findBtn.getHeight());
-
-
-        final JCheckBox matchCheckBox=new JCheckBox("区分大小写(C)");
-        matchCheckBox.setBounds(label_1.getX(),replaceText.getY()+replaceText.getHeight()+30,120,60);
-
-		panel.add(label_1);
-		panel.add(findText);
-		panel.add(label_2);
-		panel.add(replaceText);
-
-		panel.add(findBtn);
-		panel.add(replaceBtn);
-		panel.add(replaceAllBtn);
-		panel.add(cancelBtn);
-
-
-		panel.add(matchCheckBox);
-
-		panel.setVisible(true);
-
-
-		search.add(panel);
-		search.setVisible(true);
-		search.setResizable(false);
-
-
-
-
-		//为查找下一个 按钮绑定监听事件
-
-        findBtn.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e) {
-                myFind(matchCheckBox.isSelected(),findText.getText(),true);
-            }
-        });
-
-        //"替换"按钮监听
-        replaceBtn.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                if(body.getSelectedText()==null) {
-                    myFind(matchCheckBox.isSelected(),findText.getText(),true);
-                }
-                else{
-                    body.replaceSelection(replaceText.getText());
-                    myFind(matchCheckBox.isSelected(),findText.getText(),true);
-                }
+    //检查编辑菜单中选项的可用性
+    public void checkMenuItemEnabled() {
+        String selectText=body.getSelectedText();
+        boolean selected=(selectText!=null);
+        for(JMenuItem item : selectActions){
+            item.setEnabled(selected);
         }
-        });//"替换"按钮监听结束
 
-        //"全部替换"按钮监听
-        replaceAllBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String replaced=body.getText().replace(findText.getText(),replaceText.getText());
-                body.setText(replaced);
-                body.setCaretPosition(0);
-        }//while循环结束
-
-        });//"替换全部"方法结束
-
-
-		cancelBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				search.dispose();
-			}
-		});
-	}
-
-	void myFind(boolean matchCase, String findText, boolean isDown)
-    {
-        int k=0,m=0;
-        final String source,strA,strB;
-        source=body.getText();
-
-
-        //"区分大小写(C)"的JCheckBox是否被选中
-        if(matchCase) {//区分大小写
-            strA=source;
-            strB=findText;
-        }
-        else{ //不区分大小写,此时把所选内容全部化成大写(或小写)，以便于查找
-            strA=source.toUpperCase();
-            strB=findText.toUpperCase();
+        //可不可以进行搜索
+        boolean searchable=body.getText().length()!=0;
+        for (JMenuItem item : searchActions) {
+            item.setEnabled(searchable);
         }
 
 
-        if(!isDown)
-        {
-            if(body.getSelectedText()==null)
-                k=strA.lastIndexOf(strB,body.getCaretPosition()-1);
-            else
-                k=strA.lastIndexOf(strB, body.getCaretPosition()-findText.length()-1);
-            if(k>-1) {   //String strData=strA.subString(k,strB.getText().length()+1);
-                body.setCaretPosition(k);
-                body.select(k,k+strB.length());
-            }
-            else {
-                JOptionPane.showMessageDialog(null,"找不到您查找的内容！","查找",JOptionPane.INFORMATION_MESSAGE);
-            }
-        }
-        else {
-            if(body.getSelectedText()==null)
-                k=strA.indexOf(strB,body.getCaretPosition()+1);
-            else {
-                k = strA.indexOf(strB, body.getCaretPosition() - findText.length() + 1);
-            }
-            if(k>-1) {   //String strData=strA.subString(k,strB.getText().length()+1);
-                body.setCaretPosition(k);
-                body.select(k,k+strB.length());
-            }
-            else {
-                JOptionPane.showMessageDialog(null,"找不到您查找的内容！","查找",JOptionPane.INFORMATION_MESSAGE);
-            }
-        }
+        //可不可以黏贴
+        Transferable contents=clipBoard.getContents(this);
+        pasteItem.setEnabled(contents!=null);
+
+    }
+
+
+    //实现DocumentListener接口中的方法
+    public void removeUpdate(DocumentEvent e) {
+	    rollbackItem.setEnabled(true);
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+	    rollbackItem.setEnabled(true);
+    }
+    public void changedUpdate(DocumentEvent e) {
+	    rollbackItem.setEnabled(true);
     }
 
 
